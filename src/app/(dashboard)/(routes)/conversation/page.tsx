@@ -16,6 +16,8 @@ import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/empty";
+import { useProModal } from "@/hooks/use-pro-modal";
+import toast from "react-hot-toast";
 
 interface ChatCompletionMessageParam {
   role: "user" | "assistant" | "system";
@@ -24,6 +26,7 @@ interface ChatCompletionMessageParam {
 }
 
 const ConversationPage = () => {
+  const proModal = useProModal();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,10 +51,15 @@ const ConversationPage = () => {
         messages: newMessages,
       });
       setMessages((current) => [...current, userMessage, response.data]);
+      toast.success("Text generated");
 
       form.reset();
     } catch (error: any) {
-      console.log("error in chat gpt" + error);
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }

@@ -16,6 +16,8 @@ import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/empty";
+import { useProModal } from "@/hooks/use-pro-modal";
+import toast from "react-hot-toast";
 
 interface ChatCompletionMessageParam {
   role: "user" | "assistant" | "system";
@@ -24,6 +26,8 @@ interface ChatCompletionMessageParam {
 }
 
 const MusicPage = () => {
+  const proModal = useProModal();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,11 +43,18 @@ const MusicPage = () => {
     console.log(values);
     try {
       setMusic(undefined);
-      const response = await axios.post("/api/music",values);
+
+      const response = await axios.post('/api/music', values);
+      console.log(response)
+
       setMusic(response.data.audio);
       form.reset();
     } catch (error: any) {
-      console.log("error in chat gpt" + error);
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+      }else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }

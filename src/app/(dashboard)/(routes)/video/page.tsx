@@ -1,7 +1,7 @@
 "use client";
 import * as z from "zod";
 import { Heading } from "@/components/heading";
-import { FileAudio} from "lucide-react";
+import { FileAudio, Video} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { formSchema } from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/empty";
+import { useProModal } from "@/hooks/use-pro-modal";
+import toast from "react-hot-toast";
 
 interface ChatCompletionMessageParam {
   role: "user" | "assistant" | "system";
@@ -22,6 +24,8 @@ interface ChatCompletionMessageParam {
 }
 
 const VideoPage = () => {
+  const proModal = useProModal();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,7 +47,11 @@ const VideoPage = () => {
       setVideo(response.data[0]);
       form.reset();
     } catch (error: any) {
-      console.log("error in chat gpt" + error);
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+      }else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }
@@ -53,7 +61,7 @@ const VideoPage = () => {
       <Heading
         title="Video Generation"
         description="Turn your prompt into video."
-        icon={FileAudio}
+        icon={Video}
         iconColor="text-orange-700"
         bgColor="bg-orange-700/10"
       />

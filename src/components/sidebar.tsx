@@ -14,6 +14,7 @@ import { Montserrat } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import FreeLimit from "./free-counter";
 
 const monsterrat = Montserrat({
   weight: "600",
@@ -57,16 +58,21 @@ const routes = [
     color: "text-green-700",
     href: "/code",
   },
-  // {
-  //   label: "Settings",
-  //   icon: Settings,
-  //   href: "/settings",
-  // },
+  {
+    label: "Settings",
+    icon: Settings,
+    href: "/settings",
+  },
 ];
 
+interface sidebarProps{
+  apiLimitCount:number,
+  isPro:boolean
+}
 
 
-const Sidebar = () => {
+
+const Sidebar = ({apiLimitCount =0,isPro=false }:sidebarProps) => {
     const pathname = usePathname();
 
   return (
@@ -98,6 +104,7 @@ const Sidebar = () => {
           ))}
         </div>
       </div>
+      <FreeLimit apiLimitCount={apiLimitCount} isPro={isPro}/>
     </div>
   );
 };

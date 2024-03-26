@@ -16,9 +16,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { amountOptions, formSchema, resolutionOptions } from "./constants";
 import { Card, CardFooter } from "@/components/ui/card";
 import Image from "next/image";
+import { useProModal } from "@/hooks/use-pro-modal";
+import toast from "react-hot-toast";
 
 
 const ImagePage = () => {
+  const proModal = useProModal();
+
   const [images, setImages] = useState<string[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,7 +46,11 @@ const ImagePage = () => {
       const urls = data.data.map((image: { url: string }) => image.url);
       setImages(urls);
     } catch (error: any) {
-      console.log("error in chat gpt" + error);
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+      }else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }

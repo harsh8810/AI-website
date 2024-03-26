@@ -1,6 +1,9 @@
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { incrementApiLimit, checkApiLimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
+
 
 const openai = new OpenAI();
 
@@ -26,6 +29,15 @@ export async function POST(req: Request) {
       return new NextResponse("Resolution is required", { status: 400 });
     }
 
+    const freeTrial = await checkApiLimit();
+    const isPro = await checkSubscription();
+
+    if(!freeTrial && !isPro){
+      return new NextResponse("Free trial has expired.",{
+        status:403
+      })
+    }
+
     const response = await openai.images.generate({
       model: "dall-e-2",
       prompt,
@@ -33,7 +45,10 @@ export async function POST(req: Request) {
       size: resolution,
     });
   
- 
+    if(!isPro){
+
+      await incrementApiLimit();
+    }
 
     return NextResponse.json(response);
   } catch (error) {
